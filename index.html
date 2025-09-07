@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SecureScan - Solução avançada de varredura de vulnerabilidades web. Proteja seu site contra SQL Injection, XSS e outras ameaças.">
+  <title>SecureScan - Proteja seu site contra vulnerabilidades</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            dark: {
+              900: '#0a0a0a',
+              800: '#1a1a1a',
+              700: '#2a2a2a',
+              600: '#3a3a3a',
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 6s ease-in-out infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #a855f7;
+      --accent: #06b6d4;
+    }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      scroll-behavior: smooth;
+      background-color: #0a0a0a;
+      color: #f5f5f5;
+      overflow-x: hidden;
+    }
+
+    .navbar {
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .navbar.scrolled {
+      background: rgba(15, 15, 15, 0.98);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .hero-gradient {
+      background: linear-gradient(-45deg, #0f0f0f, #1a1a1a, #0f172a, #1e1b4b);
+      background-size: 400% 400%;
+      animation: gradientShift 15s ease infinite;
+    }
+    
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .feature-card {
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      background: linear-gradient(145deg, #1a1a1a, #151515);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: 0.5s;
+    }
+    
+    .feature-card:hover::before {
+      left: 100%;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 10px 30px rgba(79, 70, 229, 0.25);
+      border-color: rgba(79, 70, 229, 0.2);
+    }
+
+    .carousel-container {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1.5rem;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    }
+    
+    .carousel-item {
+      position: absolute;
+      opacity: 0;
+      transition: opacity 0.8s ease-in-out, transform 1.2s ease-in-out;
+      width: 100%;
+      top: 0;
+      left: 0;
+      transform: scale(1.05);
+    }
+    
+    .carousel-item.active {
+      opacity: 1;
+      position: relative;
+      transform: scale(1);
+    }
+    
+    .carousel-button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(20, 20, 20, 0.7);
+      color: #e0e0e0;
+      border: none;
+      padding: 1rem;
+      cursor: pointer;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      z-index: 10;
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+    
+    .carousel-button:hover {
+      background: rgba(79, 70, 229, 0.8);
+      color: white;
+      transform: translateY(-50%) scale(1.1);
+    }
+    
+    .carousel-progress {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      z-index: 10;
+    }
+    
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.3s ease;
+    }
+    
+    .carousel-dots {
+      display: flex;
+      justify-content: center;
+      margin-top: 1.5rem;
+      gap: 0.75rem;
+    }
+    
+    .carousel-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .carousel-dot.active {
+      background: var(--primary);
+      transform: scale(1.3);
+      box-shadow: 0 0 10px var(--primary);
+    }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 1s ease, transform 1s ease;
+    }
+    
+    .fade-in.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .delay-200 { transition-delay: 200ms; }
+    .delay-400 { transition-delay: 400ms; }
+    .delay-600 { transition-delay: 600ms; }
+    .delay-800 { transition-delay: 800ms; }
+
+    .pricing-card {
+      background: linear-gradient(145deg, #1a1a1a, #151515);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .pricing-card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(79, 70, 229, 0.1) 0%, transparent 70%);
+      transform: rotate(30deg);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    
+    .pricing-card:hover::after {
+      opacity: 1;
+    }
+    
+    .pricing-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 15px 35px rgba(79, 70, 229, 0.25);
+      border-color: rgba(79, 70, 229, 0.2);
+    }
+
+    .btn-primary {
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: 0.5s;
+    }
+    
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 7px 20px rgba(79, 70, 229, 0.4);
+    }
+
+    .mobile-menu {
+      transform: translateX(100%);
+      transition: transform 0.4s ease-in-out;
+      background: rgba(15, 15, 15, 0.98);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .mobile-menu.open {
+      transform: translateX(0);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+    
+    .faq-answer.open {
+      max-height: 500px;
+    }
+
+    @media (max-width: 768px) {
+      .hero-heading {
+        font-size: 2.5rem;
+      }
+      
+      .carousel-button {
+        width: 40px;
+        height: 40px;
+        padding: 0.75rem;
+      }
+      
+      .feature-card {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body class="antialiased">
+
+  <header class="navbar fixed w-full z-50">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <a href="#" class="text-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent flex items-center">
+        <span class="mr-2"><i class="fas fa-shield-alt"></i></span> SecureScan
+      </a>
+
+      <nav class="hidden md:flex space-x-8 font-medium">
+        <a href="#sobre" class="text-gray-300 hover:text-indigo-400 transition-colors">Sobre</a>
+        <a href="#funcionalidades" class="text-gray-300 hover:text-indigo-400 transition-colors">Funcionalidades</a>
+        <a href="#prints" class="text-gray-300 hover:text-indigo-400 transition-colors">Screenshots</a>
+        <a href="#planos" class="text-gray-300 hover:text-indigo-400 transition-colors">Planos</a>
+        <a href="#contato" class="text-gray-300 hover:text-indigo-400 transition-colors">Contato</a>
+      </nav>
+
+      <button id="mobile-menu-button" class="md:hidden text-gray-300 focus:outline-none" aria-label="Abrir menu">
+        <i class="fas fa-bars text-xl"></i>
+      </button>
+    </div>
+
+    <div id="mobile-menu" class="mobile-menu fixed inset-y-0 right-0 w-64 p-6 md:hidden">
+      <button id="close-menu" class="absolute top-4 right-4 text-gray-300 hover:text-white" aria-label="Fechar menu">
+        <i class="fas fa-times text-xl"></i>
+      </button>
+      <div class="mt-16 flex flex-col space-y-8">
+        <a href="#sobre" class="text-gray-300 hover:text-indigo-400 transition-colors text-lg">Sobre</a>
+        <a href="#funcionalidades" class="text-gray-300 hover:text-indigo-400 transition-colors text-lg">Funcionalidades</a>
+        <a href="#prints" class="text-gray-300 hover:text-indigo-400 transition-colors text-lg">Screenshots</a>
+        <a href="#planos" class="text-gray-300 hover:text-indigo-400 transition-colors text-lg">Planos</a>
+        <a href="#contato" class="text-gray-300 hover:text-indigo-400 transition-colors text-lg">Contato</a>
+      </div>
+      <div class="absolute bottom-8 left-6 right-6">
+        <a href="#planos" class="btn-primary block text-center py-3 rounded-lg font-semibold">Experimente agora</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero-gradient min-h-screen flex items-center pt-24 pb-16 px-4">
+    <div class="container mx-auto text-center">
+      <div class="max-w-3xl mx-auto">
+        <h1 class="hero-heading text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 fade-in">
+          <span class="block">Proteja seu site contra</span>
+          <span class="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">vulnerabilidades</span>
+        </h1>
+        <p class="text-xl md:text-2xl text-gray-300 mb-10 fade-in delay-200">
+          Escaneamento avançado que identifica falhas de segurança antes que os hackers as encontrem.
+        </p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4 fade-in delay-400">
+          <a href="#planos" class="btn-primary px-8 py-4 rounded-full font-semibold inline-flex items-center justify-center">
+            <span>Começar agora</span>
+            <i class="fas fa-arrow-right ml-2"></i>
+          </a>
+          <a href="#funcionalidades" class="px-8 py-4 rounded-full font-semibold border border-indigo-700 text-indigo-300 hover:bg-indigo-900/30 transition">
+            Ver funcionalidades
+          </a>
+        </div>
+      </div>
+      
+      <div class="mt-20 max-w-5xl mx-auto fade-in delay-600">
+        <div class="bg-dark-800/50 rounded-2xl p-6 backdrop-blur-sm border border-gray-800/50 shadow-xl">
+          <div class="flex flex-wrap justify-center gap-4">
+            <div class="flex items-center">
+              <div class="w-3 h-3 rounded-full bg-green-500 mr-2 animate-pulse"></div>
+              <span class="text-gray-300">Verificação de SQL Injection</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-3 h-3 rounded-full bg-green-500 mr-2 animate-pulse"></div>
+              <span class="text-gray-300">Detecção de XSS</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-3 h-3 rounded-full bg-green-500 mr-2 animate-pulse"></div>
+              <span class="text-gray-300">Analise de Headers</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="absolute top-1/4 left-10 w-4 h-4 rounded-full bg-indigo-500/20 animate-float hidden lg:block" aria-hidden="true"></div>
+    <div class="absolute top-1/3 right-20 w-6 h-6 rounded-full bg-purple-500/20 animate-float delay-1000 hidden lg:block" aria-hidden="true"></div>
+    <div class="absolute bottom-1/4 left-20 w-8 h-8 rounded-full bg-blue-500/20 animate-float delay-2000 hidden lg:block" aria-hidden="true"></div>
+  </section>
+
+  <section id="sobre" class="py-20 bg-dark-900">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto text-center fade-in">
+        <h2 class="text-3xl md:text-4xl font-bold mb-6 text-white">O que é o SecureScan?</h2>
+        <p class="text-lg md:text-xl leading-relaxed text-gray-300 mb-12">
+          O SecureScan é uma solução avançada de varredura de vulnerabilidades web que identifica falhas de segurança em minutos. 
+          Utilizando inteligência artificial e um banco de dados com milhares de assinaturas de ameaças, oferecemos proteção 
+          proativa para desenvolvedores, analistas e empresas.
+        </p>
+        
+        <div class="grid md:grid-cols-3 gap-8 mt-16">
+          <div class="feature-card p-6 rounded-2xl text-center">
+            <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-indigo-900/50 flex items-center justify-center text-2xl text-indigo-400">
+              <i class="fas fa-bolt"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3">Rápido</h3>
+            <p class="text-gray-400">Escaneamentos completos em menos de 5 minutos</p>
+          </div>
+          
+          <div class="feature-card p-6 rounded-2xl text-center">
+            <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-purple-900/50 flex items-center justify-center text-2xl text-purple-400">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3">Confiável</h3>
+            <p class="text-gray-400">Taxa de detecção de 99.8% com falsos positivos mínimos</p>
+          </div>
+          
+          <div class="feature-card p-6 rounded-2xl text-center">
+            <div class="w-16 h-16 mx-auto mb-6 rounded-2xl bg-blue-900/50 flex items-center justify-center text-2xl text-blue-400">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-3">Eficiente</h3>
+            <p class="text-gray-400">Otimizado para não impactar o desempenho do seu site</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="funcionalidades" class="py-20 bg-dark-800">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16 fade-in">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">Funcionalidades Principais</h2>
+        <p class="text-xl text-gray-300 max-w-2xl mx-auto">Tudo que você precisa para manter seu website seguro e protegido</p>
+      </div>
+      
+      <div class="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+        <div class="fade-in">
+          <div class="feature-card p-8 rounded-2xl">
+            <div class="flex items-start mb-6">
+              <div class="w-12 h-12 rounded-lg bg-indigo-900/50 flex items-center justify-center text-xl text-indigo-400 mr-4">
+                <i class="fas fa-search"></i>
+              </div>
+              <div>
+                <h3 class="text-2xl font-semibold mb-2">Varredura Completa</h3>
+                <p class="text-gray-300">Analise todos os endpoints do seu website em busca de vulnerabilidades conhecidas e zero-days.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="fade-in delay-200">
+          <div class="feature-card p-8 rounded-2xl">
+            <div class="flex items-start mb-6">
+              <div class="w-12 h-12 rounded-lg bg-purple-900/50 flex items-center justify-center text-xl text-purple-400 mr-4">
+                <i class="fas fa-file-alt"></i>
+              </div>
+              <div>
+                <h3 class="text-2xl font-semibold mb-2">Relatórios Detalhados</h3>
+                <p class="text-gray-300">Relatórios completos e detalhados com recomendações específicas para correção de vulnerabilidades.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+  </section>
+
+<section id="prints" class="py-20 bg-dark-900">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-16 fade-in">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">Interface do SecureScan</h2>
+      <p class="text-xl text-gray-300 max-w-2xl mx-auto">Conheça nossa interface intuitiva e poderosa</p>
+    </div>
+    
+    <div class="max-w-5xl mx-auto fade-in">
+      <div class="carousel-container">
+        <div class="carousel-item active">
+          <img src="dashboard.png" alt="Dashboard do SecureScan mostrando estatísticas de segurança" class="w-full rounded-xl" loading="lazy">
+        </div>
+        <div class="carousel-item">
+          <img src="resultados.png" alt="Relatórios do SecureScan com análise de vulnerabilidades" class="w-full rounded-xl" loading="lazy">
+        </div>
+        <div class="carousel-item">
+          <img src="varredura.png" alt="Configurações do SecureScan para personalização de escaneamentos" class="w-full rounded-xl" loading="lazy">
+        </div>
+
+        <button id="prev" class="carousel-button left-4" aria-label="Slide anterior">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button id="next" class="carousel-button right-4" aria-label="Próximo slide">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <div class="carousel-progress">
+          <div class="progress-bar"></div>
+        </div>
+      </div>
+      
+      <div class="carousel-dots">
+        <span class="carousel-dot active" data-index="0" aria-label="Mostrar slide 1"></span>
+        <span class="carousel-dot" data-index="1" aria-label="Mostrar slide 2"></span>
+        <span class="carousel-dot" data-index="2" aria-label="Mostrar slide 3"></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section id="planos" class="py-20 bg-gray-900">
+  <div class="container mx-auto px-4">
+
+    <div class="text-center mb-16 fade-in">
+      <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">Adquira agora</h2>
+      <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+        Preço acessível para acesso vitalício
+      </p>
+    </div>
+
+    <div class="flex flex-wrap justify-center gap-8 fade-in delay-200">
+
+      <div class="pricing-card p-8 rounded-2xl h-full flex flex-col border-2 border-indigo-500 relative bg-gray-800 w-full max-w-md">
+
+        <h3 class="text-2xl font-bold mb-4 text-white">Vitalício</h3>
+
+        <div class="mb-6 flex items-baseline gap-2">
+          <span class="text-4xl font-bold text-white">R$89</span>
+          <span class="text-gray-400">/Acesso Permanente</span>
+        </div>
+
+        <ul class="mb-8 text-gray-300 flex-1 space-y-3">
+          <li class="flex items-start">
+            <i class="fas fa-check-circle text-indigo-400 mr-2 mt-1"></i>
+            <span>Varredura diária</span>
+          </li>
+          <li class="flex items-start">
+            <i class="fas fa-check-circle text-indigo-400 mr-2 mt-1"></i>
+            <span>Relatórios completos</span>
+          </li>
+          <li class="flex items-start">
+            <i class="fas fa-check-circle text-indigo-400 mr-2 mt-1"></i>
+            <span>Suporte prioritário</span>
+          </li>
+          <li class="flex items-start">
+            <i class="fas fa-check-circle text-indigo-400 mr-2 mt-1"></i>
+            <span>Atualizações gratuitas</span>
+          </li>
+          <li class="flex items-start">
+            <i class="fas fa-check-circle text-indigo-400 mr-2 mt-1"></i>
+            <span>Proteção para 1 domínio</span>
+          </li>
+        </ul>
+
+        <a href="https://wa.me/5534999576480?text=Ol%C3%A1%2C%20quero%20adquirir%20o%20Secure%20Scan"
+           target="_blank"
+           rel="noopener noreferrer"
+           aria-label="Adquirir plano vitalício via WhatsApp"
+           class="relative z-50 flex items-center justify-center gap-2 py-3 rounded-lg font-semibold bg-green-500 hover:bg-green-600 transition-colors text-white">
+          <i class="fab fa-whatsapp text-xl"></i>
+          Adquira agora
+        </a>
+
+      </div> 
+    </div>
+  </div> 
+</section>
+
+  <section class="py-20 bg-dark-900">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-16 fade-in">
+          <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">Perguntas Frequentes</h2>
+          <p class="text-xl text-gray-300">Tire suas dúvidas sobre o SecureScan</p>
+        </div>
+        
+        <div class="space-y-6">
+          <div class="feature-card p-6 rounded-2xl fade-in">
+            <button class="faq-question flex justify-between items-center w-full text-left font-semibold text-lg">
+              <span>Como funciona o SecureScan?</span>
+              <i class="fas fa-chevron-down text-indigo-400 transition-transform"></i>
+            </button>
+            <div class="faq-answer mt-4 text-gray-300">
+              O SecureScan utiliza um motor de varredura avançado que analisa seu website em busca de vulnerabilidades conhecidas. 
+              Nosso sistema testa automaticamente para falhas como SQL Injection, XSS, configurações inadequadas e muito mais, 
+              fornecendo um relatório detalhado com recomendações para correção.
+            </div>
+          </div>
+          
+          <div class="feature-card p-6 rounded-2xl fade-in delay-100">
+            <button class="faq-question flex justify-between items-center w-full text-left font-semibold text-lg">
+              <span>Preciso instalar algo no meu servidor?</span>
+              <i class="fas fa-chevron-down text-indigo-400 transition-transform"></i>
+            </button>
+            <div class="faq-answer mt-4 text-gray-300">
+              Não, o SecureScan é uma solução baseda em nuvem. Tudo que você precisa fazer é nos informar a URL do seu website 
+              e nós faremos a varredura remotamente, sem a necessidade de instalar qualquer software no seu servidor.
+            </div>
+          </div>
+          
+          <div class="feature-card p-6 rounded-2xl fade-in delay-200">
+            <button class="faq-question flex justify-between items-center w-full text-left font-semibold text-lg">
+              <span>Precisa ser especialista para entender os relatórios?</span>
+              <i class="fas fa-chevron-down text-indigo-400 transition-transform"></i>
+            </button>
+            <div class="faq-answer mt-4 text-gray-300">
+              Não, o SecureScan é desenvolvido para ser fácil de usar, mesmo para quem não é especialista em segurança. Nossos relatórios 
+              são claros e explicativos, com recomendações passo a passo para corrigir cada vulnerabilidade identificada.
+            </div>
+          </div>
+          
+          <div class="feature-card p-6 rounded-2xl fade-in delay-300">
+            <button class="faq-question flex justify-between items-center w-full text-left font-semibold text-lg">
+              <span>Com que frequência devo escanear meu site?</span>
+              <i class="fas fa-chevron-down text-indigo-400 transition-transform"></i>
+            </button>
+            <div class="faq-answer mt-4 text-gray-300">
+              Recomendamos escaneamentos semanais para sites com conteúdo estático e escaneamentos diários para sites com conteúdo dinâmico 
+              ou que são atualizados com frequência. Com o plano vitalício, você pode configurar a frequência de varredura conforme sua necessidade.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="contato" class="py-20 bg-dark-800">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-16 fade-in">
+          <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">Entre em Contato</h2>
+          <p class="text-xl text-gray-300">Tem dúvidas ou precisa de suporte? Nossa equipe está aqui para ajudar.</p>
+        </div>
+        
+        <div class="feature-card p-8 rounded-2xl fade-in delay-200">
+          <div class="grid md:grid-cols-2 gap-8">
+            <div>
+              <h3 class="text-2xl font-semibold mb-6 text-white">Informações de Contato</h3>
+              <div class="space-y-4">
+                <div class="flex items-start">
+                  <div class="w-10 h-10 rounded-lg bg-indigo-900/50 flex items-center justify-center text-indigo-400 mr-4">
+                    <i class="fas fa-envelope"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-white">Email</h4>
+                    <p class="text-gray-300">felipediasdev00@gmail.com</p>
+                  </div>
+                </div>
+                
+                <div class="flex items-start">
+                  <div class="w-10 h-10 rounded-lg bg-purple-900/50 flex items-center justify-center text-purple-400 mr-4">
+                    <i class="fab fa-whatsapp"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-white">WhatsApp</h4>
+                    <p class="text-gray-300">+55 (34) 9957-6480</p>
+                  </div>
+                </div>
+                
+                <div class="flex items-start">
+                  <div class="w-10 h-10 rounded-lg bg-blue-900/50 flex items-center justify-center text-blue-400 mr-4">
+                    <i class="fas fa-clock"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-white">Horário de Atendimento</h4>
+                    <p class="text-gray-300">Segunda a Sexta, 13h às 20h</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-2xl font-semibold mb-6 text-white">Envie uma Mensagem</h3>
+              <form class="space-y-4">
+                <div>
+                  <label for="name" class="block text-sm font-medium text-gray-300 mb-1">Nome</label>
+                  <input type="text" id="name" name="name" required class="w-full px-4 py-3 rounded-lg bg-dark-700 text-white border border-gray-700 focus:outline-none focus:border-indigo-500 transition" placeholder="Seu nome">
+                </div>
+                <div>
+                  <label for="email" class="block text-sm font-medium text-gray-300 mb-1">Email</label>
+                  <input type="email" id="email" name="email" required class="w-full px-4 py-3 rounded-lg bg-dark-700 text-white border border-gray-700 focus:outline-none focus:border-indigo-500 transition" placeholder="Seu email">
+                </div>
+                <div>
+                  <label for="message" class="block text-sm font-medium text-gray-300 mb-1">Mensagem</label>
+                  <textarea id="message" name="message" rows="4" required class="w-full px-4 py-3 rounded-lg bg-dark-700 text-white border border-gray-700 focus:outline-none focus:border-indigo-500 transition" placeholder="Digite sua mensagem"></textarea>
+                </div>
+                <button type="submit" class="btn-primary w-full py-3 rounded-lg font-semibold text-white">Enviar Mensagem</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="bg-dark-900 py-8">
+    <div class="container mx-auto px-4 text-center text-gray-400">
+      <div class="mb-4">
+        <a href="#" class="text-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">
+          <i class="fas fa-shield-alt mr-2"></i> SecureScan
+        </a>
+      </div>
+      <div class="mb-2">
+        &copy; 2025 SecureScan. Todos os direitos reservados.
+      </div>
+      <div>
+        <a href="mailto:contato@securescan.com" class="hover:text-indigo-400">felipediasdev00@gmail.com</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+
+    window.addEventListener('scroll', function() {
+      const navbar = document.querySelector('.navbar');
+      if (window.scrollY > 40) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
+      }
+    });
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const closeMenu = document.getElementById('close-menu');
+    mobileMenuButton.addEventListener('click', () => mobileMenu.classList.add('open'));
+    closeMenu.addEventListener('click', () => mobileMenu.classList.remove('open'));
+
+    function showOnScroll() {
+      document.querySelectorAll('.fade-in').forEach(el => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight - 60) {
+          el.classList.add('show');
+        }
+      });
+    }
+    window.addEventListener('scroll', showOnScroll);
+    window.addEventListener('DOMContentLoaded', showOnScroll);
+
+    document.querySelectorAll('.faq-question').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const answer = this.nextElementSibling;
+        answer.classList.toggle('open');
+        this.querySelector('i').classList.toggle('rotate-180');
+      });
+    });
+
+    const items = document.querySelectorAll('.carousel-item');
+    const dots = document.querySelectorAll('.carousel-dot');
+    const progressBar = document.querySelector('.progress-bar');
+    let current = 0;
+    let interval;
+
+    function showSlide(idx) {
+      items.forEach((item, i) => {
+        item.classList.toggle('active', i === idx);
+      });
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === idx);
+      });
+      current = idx;
+      progressBar.style.width = ((idx + 1) / items.length * 100) + '%';
+    }
+
+    function nextSlide() {
+      showSlide((current + 1) % items.length);
+    }
+
+    function prevSlide() {
+      showSlide((current - 1 + items.length) % items.length);
+    }
+
+    document.getElementById('next').addEventListener('click', () => {
+      nextSlide();
+      resetInterval();
+    });
+    document.getElementById('prev').addEventListener('click', () => {
+      prevSlide();
+      resetInterval();
+    });
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        showSlide(Number(dot.dataset.index));
+        resetInterval();
+      });
+    });
+
+    function resetInterval() {
+      clearInterval(interval);
+      interval = setInterval(nextSlide, 6000);
+    }
+    resetInterval();
+
+    document.querySelector('form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      alert('Mensagem enviada! Entraremos em contato em breve.');
+      this.reset();
+    });
+  </script>
+</body>
+</html>
